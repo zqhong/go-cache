@@ -17,7 +17,7 @@ func TestJanitorTTL(t *testing.T) {
 		t.Error("it should receive 1")
 	}
 
-	time.Sleep(interval *10 + 233 * time.Microsecond)
+	time.Sleep(interval*10 + 233*time.Microsecond)
 	i = c.Get("int")
 	if i != nil {
 		t.Error("it should receive nil")

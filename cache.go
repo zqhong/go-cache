@@ -13,7 +13,6 @@ const (
 	DefaultCleanupInterval = 30 * time.Second
 )
 
-
 // Cache exposed structure for users to use
 type Cache struct {
 	*cache
@@ -72,7 +71,7 @@ func (c *cache) cleanup() {
 func New() *Cache {
 	j := &janitor{
 		interval: DefaultCleanupInterval,
-		stop:     make(chan bool),
+		stop:     make(chan struct{}),
 	}
 	c := &cache{janitor: j}
 	C := &Cache{c}

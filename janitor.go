@@ -6,11 +6,11 @@ import (
 
 type janitor struct {
 	interval time.Duration
-	stop     chan bool
+	stop     chan struct{}
 }
 
 func (j *janitor) stopJanitor() {
-	j.stop <- true
+	j.stop <- struct{}{}
 }
 
 func (j *janitor) process(c *cache) {
