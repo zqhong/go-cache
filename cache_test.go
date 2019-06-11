@@ -1,11 +1,12 @@
 package cache
 
 import (
+	"runtime"
 	"testing"
 	"time"
 )
 
-func TestCache_Basic(t *testing.T) {
+func TestCacheBasic(t *testing.T) {
 	c := New()
 
 	none := c.Get("not-found")
@@ -24,4 +25,19 @@ func TestCache_Basic(t *testing.T) {
 	if i.(int) != 1 {
 		t.Error("should receive 1")
 	}
+}
+
+func TestCacheAutoGC(t *testing.T) {
+	sign := make(chan struct{})
+	go func() {
+		interval := 10 * time.Millisecond
+		ttl := 15 * time.Millisecond
+		c := New()
+		c.SetCleanupInterval(interval)
+		c.Put("int", 1, ttl)
+		sign <- struct{}{}
+	}()
+
+	<-sign
+	runtime.GC()
 }
