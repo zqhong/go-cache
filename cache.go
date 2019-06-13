@@ -51,9 +51,9 @@ func (c *cache) Get(k interface{}) interface{} {
 }
 
 func (c *cache) SetCleanupInterval(interval time.Duration) {
-	c.janitor.interval = interval
 	c.janitor.stopJanitor()
 	go c.janitor.process(c)
+	janitorInterval <- interval
 }
 
 func (c *cache) cleanup() {
@@ -70,12 +70,12 @@ func (c *cache) cleanup() {
 // New return *Cache
 func New() *Cache {
 	j := &janitor{
-		interval: DefaultCleanupInterval,
 		stop:     make(chan struct{}),
 	}
 	c := &cache{janitor: j}
 	C := &Cache{c}
 	go j.process(c)
+	janitorInterval <- DefaultCleanupInterval
 
 	runtime.SetFinalizer(C, func(c *Cache) {
 		c.janitor.stopJanitor()
