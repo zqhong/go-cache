@@ -1,7 +1,6 @@
 package cache
 
 import (
-	"fmt"
 	"runtime"
 	"testing"
 	"time"
@@ -122,8 +121,6 @@ func TestCache_DecrBy(t *testing.T) {
 
 	c.Put("Test-DecrBy2", uint(200), 100*time.Millisecond)
 	err = c.DecrBy("Test-DecrBy2", 1000)
-	fmt.Println("Test-DecrBy2 key 的值：")
-	fmt.Println(c.Get("Test-DecrBy2"))
 
 	if err == nil {
 		t.Error("it should receive an error")
