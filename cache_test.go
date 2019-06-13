@@ -31,6 +31,15 @@ func TestCacheBasic(t *testing.T) {
 	if i.(int) != 1 {
 		t.Error("it should receive 1")
 	}
+
+	c.Put("Test-Del", 1, 100*time.Millisecond)
+	if !c.Exists("Test-Del") {
+		t.Error("The key named 'Test-Del' should exist.")
+	}
+	c.Del("Test-Del")
+	if c.Exists("Test-Del") {
+		t.Error("The key named 'Test-Del' should not exist.")
+	}
 }
 
 func TestCacheAutoGC(t *testing.T) {

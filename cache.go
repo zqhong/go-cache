@@ -56,6 +56,11 @@ func (c *cache) Exists(key interface{}) bool {
 	return ok
 }
 
+// Delete the given key
+func (c *cache) Del(key interface{}) {
+	c.mapping.Delete(key)
+}
+
 func (c *cache) SetCleanupInterval(interval time.Duration) {
 	c.janitor.stopJanitor()
 	go c.janitor.process(c)
