@@ -29,10 +29,10 @@ type item struct {
 }
 
 // Put item in Cache with its ttl
-func (c *cache) Put(k interface{}, x interface{}, d time.Duration) {
-	c.mapping.Store(k, &item{
-		Payload: x,
-		Expired: time.Now().Add(d),
+func (c *cache) Put(key interface{}, payload interface{}, ttl time.Duration) {
+	c.mapping.Store(key, &item{
+		Payload: payload,
+		Expired: time.Now().Add(ttl),
 	})
 }
 

@@ -6,24 +6,13 @@ import (
 	"time"
 )
 
-func TestCacheBasic(t *testing.T) {
+func TestCache_Put(t *testing.T) {
 	c := New()
-
-	none := c.Get("not-found")
-	if none != nil {
-		t.Error("should receive nil")
-	}
-	if c.Exists("not-found") {
-		t.Error("The key named 'not-found' should not exist.")
-	}
 
 	c.Put("str", "go-cache", 100*time.Millisecond)
 	s := c.Get("str")
 	if s.(string) != "go-cache" {
 		t.Error("it should receive 'go-cache'")
-	}
-	if !c.Exists("str") {
-		t.Error("The key named 'str' should exist.")
 	}
 
 	c.Put("int", 1, 100*time.Millisecond)
@@ -31,6 +20,38 @@ func TestCacheBasic(t *testing.T) {
 	if i.(int) != 1 {
 		t.Error("it should receive 1")
 	}
+}
+
+func TestCache_Get(t *testing.T) {
+	c := New()
+
+	none := c.Get("not-found")
+	if none != nil {
+		t.Error("should receive nil")
+	}
+
+	c.Put("str", "go-cache", 100*time.Millisecond)
+	s := c.Get("str")
+	if s.(string) != "go-cache" {
+		t.Error("it should receive 'go-cache'")
+	}
+}
+
+func TestCache_Exists(t *testing.T) {
+	c := New()
+
+	if c.Exists("not-found") {
+		t.Error("The key named 'not-found' should not exist.")
+	}
+
+	c.Put("str", "go-cache", 100*time.Millisecond)
+	if !c.Exists("str") {
+		t.Error("The key named 'str' should exist.")
+	}
+}
+
+func TestCache_Del(t *testing.T) {
+	c := New()
 
 	c.Put("Test-Del", 1, 100*time.Millisecond)
 	if !c.Exists("Test-Del") {
