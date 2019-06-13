@@ -39,7 +39,7 @@ func (c *cache) Put(k interface{}, x interface{}, d time.Duration) {
 // Get item in Cache, and drop when it expired
 func (c *cache) Get(k interface{}) interface{} {
 	v, ok := c.mapping.Load(k)
-	if ok == false {
+	if !ok {
 		return nil
 	}
 	i := v.(*item)
@@ -53,7 +53,7 @@ func (c *cache) Get(k interface{}) interface{} {
 func (c *cache) SetCleanupInterval(interval time.Duration) {
 	c.janitor.stopJanitor()
 	go c.janitor.process(c)
-	janitorInterval <- interval
+	c.janitor.interval <- interval
 }
 
 func (c *cache) cleanup() {
@@ -71,11 +71,12 @@ func (c *cache) cleanup() {
 func New() *Cache {
 	j := &janitor{
 		stop:     make(chan struct{}),
+		interval: make(chan time.Duration),
 	}
 	c := &cache{janitor: j}
 	C := &Cache{c}
 	go j.process(c)
-	janitorInterval <- DefaultCleanupInterval
+	j.interval <- DefaultCleanupInterval
 
 	runtime.SetFinalizer(C, func(c *Cache) {
 		c.janitor.stopJanitor()

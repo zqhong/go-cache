@@ -6,16 +6,15 @@ import (
 
 type janitor struct {
 	stop     chan struct{}
+	interval chan time.Duration
 }
-
-var janitorInterval = make(chan time.Duration)
 
 func (j *janitor) stopJanitor() {
 	j.stop <- struct{}{}
 }
 
 func (j *janitor) process(c *cache) {
-	interval := <- janitorInterval
+	interval := <-j.interval
 	ticker := time.NewTicker(interval)
 
 Loop:
