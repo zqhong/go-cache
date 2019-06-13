@@ -107,6 +107,62 @@ func (c *cache) Incr(key interface{}) error {
 	return c.IncrBy(key, 1)
 }
 
+// Decrement the integer value of a key by the given number
+func (c *cache) DecrBy(key interface{}, decrement int) error {
+	c.RLock()
+	defer c.RUnlock()
+
+	v, ok := c.mapping.Load(key)
+	if !ok {
+		return errors.New("key not exists")
+	}
+	i := v.(*item)
+	if time.Since(i.Expired) > 0 {
+		c.Del(key)
+		return errors.New("key is expired")
+	}
+
+	itm := i.Payload
+	switch itm.(type) {
+	case int:
+		itm = itm.(int) - decrement
+	case int32:
+		itm = itm.(int32) - int32(decrement)
+	case int64:
+		itm = itm.(int64) - int64(decrement)
+	case uint:
+		if itm.(uint) > uint(decrement) {
+			itm = itm.(uint) - uint(decrement)
+		} else {
+			return errors.New("after an unsigned integer is reduced by `decrement`, the value is less than zero")
+		}
+	case uint32:
+		if itm.(uint32) > uint32(decrement) {
+			itm = itm.(uint32) - uint32(decrement)
+		} else {
+			return errors.New("after an unsigned integer is reduced by `decrement`, the value is less than zero")
+		}
+	case uint64:
+		if itm.(uint64) > uint64(decrement) {
+			itm = itm.(uint64) - uint64(decrement)
+		} else {
+			return errors.New("after an unsigned integer is reduced by `decrement`, the value is less than zero")
+		}
+	default:
+		return errors.New("the value of item is not of type (u)int, (u)int32, and (u)int64")
+	}
+
+	i.Payload = itm
+	c.mapping.Store(key, i)
+
+	return nil
+}
+
+// Decrement the integer value of a key by one
+func (c *cache) Decr(key interface{}) error {
+	return c.DecrBy(key, 1)
+}
+
 func (c *cache) SetCleanupInterval(interval time.Duration) {
 	c.janitor.stopJanitor()
 	go c.janitor.process(c)

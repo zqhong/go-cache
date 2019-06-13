@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"fmt"
 	"runtime"
 	"testing"
 	"time"
@@ -104,6 +105,41 @@ func TestCache_Incr(t *testing.T) {
 	}
 	if c.Get("Test-IncrBy") != 2 {
 		t.Error("Should receive 2 here")
+	}
+}
+
+func TestCache_DecrBy(t *testing.T) {
+	c := New()
+
+	c.Put("Test-DecrBy1", int(200), 100*time.Millisecond)
+	err := c.DecrBy("Test-DecrBy1", 100)
+	if err != nil {
+		t.Error("it should not receive an error")
+	}
+	if c.Get("Test-DecrBy1") != 100 {
+		t.Error("Should receive 100 here")
+	}
+
+	c.Put("Test-DecrBy2", uint(200), 100*time.Millisecond)
+	err = c.DecrBy("Test-DecrBy2", 1000)
+	fmt.Println("Test-DecrBy2 key 的值：")
+	fmt.Println(c.Get("Test-DecrBy2"))
+
+	if err == nil {
+		t.Error("it should receive an error")
+	}
+}
+
+func TestCache_Decr(t *testing.T) {
+	c := New()
+
+	c.Put("Test-Decr", int(100), 100*time.Millisecond)
+	err := c.Decr("Test-Decr")
+	if err != nil {
+		t.Error("it should not receive an error")
+	}
+	if c.Get("Test-Decr") != 99 {
+		t.Error("Should receive 99 here")
 	}
 }
 
