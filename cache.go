@@ -3,6 +3,7 @@
 package cache
 
 import (
+	"errors"
 	"runtime"
 	"sync"
 	"time"
@@ -19,6 +20,7 @@ type Cache struct {
 }
 
 type cache struct {
+	sync.RWMutex
 	mapping sync.Map
 	janitor *janitor
 }
@@ -44,7 +46,7 @@ func (c *cache) Get(key interface{}) interface{} {
 	}
 	i := v.(*item)
 	if time.Since(i.Expired) > 0 {
-		c.mapping.Delete(key)
+		c.Del(key)
 		return nil
 	}
 	return i.Payload
@@ -59,6 +61,50 @@ func (c *cache) Exists(key interface{}) bool {
 // Delete the given key
 func (c *cache) Del(key interface{}) {
 	c.mapping.Delete(key)
+}
+
+// Increment the integer value of a key by the given amount
+func (c *cache) IncrBy(key interface{}, increment int) error {
+	c.RLock()
+	defer c.RUnlock()
+
+	v, ok := c.mapping.Load(key)
+	if !ok {
+		return errors.New("key not exists")
+	}
+	i := v.(*item)
+	if time.Since(i.Expired) > 0 {
+		c.Del(key)
+		return errors.New("key is expired")
+	}
+
+	itm := i.Payload
+	switch itm.(type) {
+	case int:
+		itm = itm.(int) + increment
+	case int32:
+		itm = itm.(int32) + int32(increment)
+	case int64:
+		itm = itm.(int64) + int64(increment)
+	case uint:
+		itm = itm.(uint) + uint(increment)
+	case uint32:
+		itm = itm.(uint32) + uint32(increment)
+	case uint64:
+		itm = itm.(uint64) + uint64(increment)
+	default:
+		return errors.New("the value of item is not of type (u)int, (u)int32, and (u)int64")
+	}
+
+	i.Payload = itm
+	c.mapping.Store(key, i)
+
+	return nil
+}
+
+// INCR key Increment the integer value of a key by one
+func (c *cache) Incr(key interface{}) error {
+	return c.IncrBy(key, 1)
 }
 
 func (c *cache) SetCleanupInterval(interval time.Duration) {
