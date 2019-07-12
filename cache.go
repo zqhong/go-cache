@@ -1,6 +1,6 @@
 // The module implements the core logic of the cache, including: PUT, GET func
 
-package cache
+package gocache
 
 import (
 	"errors"
